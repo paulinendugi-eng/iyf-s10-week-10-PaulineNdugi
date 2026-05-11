@@ -1,1 +1,36 @@
 
+const http = require("http");
+
+const server = http.createServer((req, res) => {
+  
+    if (req.url === "/" && req.method === "GET") {
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        res.end("Welcome to my server!");
+    }
+
+    else if (req.url === "/about" && req.method === "GET") {
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        res.end("This is the About page.");
+    }
+
+    else if (req.url === "/api/time" && req.method === "GET") {
+        res.writeHead(200, { "Content-Type": "application/json" });
+
+        const data = {
+            currentTime: new Date().toISOString()
+        };
+
+        res.end(JSON.stringify(data));
+    }
+
+    else {
+        res.writeHead(404, { "Content-Type": "text/plain" });
+        res.end("404 - Page Not Found");
+    }
+});
+
+const PORT = 3000;
+
+server.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+});
