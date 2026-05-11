@@ -1,1 +1,92 @@
+const express = require("express");
 
+const app = express();
+const PORT = 3000;
+
+app.use(express.json());
+
+const posts = [
+  {
+    id: 1,
+    title: "Learning Node.js",
+    author: "john",
+    createdAt: "2026-05-01"
+  },
+  {
+    id: 2,
+    title: "Express Basics",
+    author: "mary",
+    createdAt: "2026-05-03"
+  },
+  {
+    id: 3,
+    title: "Node API Tutorial",
+    author: "john",
+    createdAt: "2026-05-05"
+  },
+  {
+    id: 4,
+    title: "JavaScript Tips",
+    author: "paul",
+    createdAt: "2026-05-02"
+  }
+];
+
+app.get("/api/posts", (req, res) => {
+  let results = [...posts];
+
+  if (req.query.author) {
+    results = results.filter(post =>
+      post.author.toLowerCase() === req.query.author.toLowerCase()
+    );
+  }
+
+  if (req.query.search) {
+    results = results.filter(post =>
+      post.title
+        .toLowerCase()
+        .includes(req.query.search.toLow
+
+  if (req.query.sort === "newest") {
+    results.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+  }
+
+  if (req.query.sort === "oldest") {
+    results.sort(
+      (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+    );
+  }
+
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || results.length;
+
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+
+  const paginatedResults = results.slice(startIndex, endIndex);
+
+  res.json({
+    totalPosts: results.length,
+    currentPage: page,
+    totalPages: Math.ceil(results.length / limit),
+    data: paginatedResults
+  });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
+
+
+GET /api/posts?author=john
+
+GET /api/posts?search=node
+
+GET /api/posts?page=1&limit=2
+
+GET /api/posts?sort=newest
+
+GET /api/posts?author=john&search=node&sort=newest&page=1&limit=1
