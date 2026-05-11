@@ -1,1 +1,78 @@
+const express = require('express');
+const app = express();
 
+app.use(express.json());
+
+class ApiError extends Error {
+    constructor(message, statusCode) {
+        super(message);
+        this.statusCode = statusCode;
+    }
+}
+
+const asyncHandler = (fn) => (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+const validatePost = (req, res, next) => {
+    const { title, content, author } = req.body;
+    const errors = [];
+
+    if (!title || title.length < 3) {
+        errors.push('Title must be at least 3 characters');
+    }
+
+    if (!content || content.length < 10) {
+        errors.push('Content must be at least 10 characters');
+    }
+
+    if (!author) {
+        errors.push('Author is required');
+    }
+
+    if (errors.length > 0) {
+        return res.status(400).json({ errors });
+    }
+
+    next();
+};
+
+app.get('/api/error-test', (req, res, next) => {
+    try {
+        throw new ApiError('Something went wrong', 500);
+    } catch (err) {
+        next(err);
+    }
+});
+
+app.get('/api/users', asyncHandler(async (req, res) => {
+    // fake example
+    const users = [{ id: 1, name: "John" }];
+    res.json(users);
+}));
+
+app.post('/api/posts', validatePost, (req, res) => {
+    res.json({
+        message: "Post created successfully",
+        data: req.body
+    });
+});
+
+app.use((err, req, res, next) => {
+    console.error(err.message);
+
+    const statusCode = err.statusCode || 500;
+
+    res.status(statusCode).json({
+        error: {
+            message: err.message || 'Internal Server Error',
+            status: statusCode
+        }
+    });
+});
+
+const PORT = 3000;
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
