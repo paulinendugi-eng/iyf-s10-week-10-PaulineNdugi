@@ -1,1 +1,69 @@
+const express = require('express');
+const app = express();
 
+app.use(express.json());
+
+const PORT = 3000;
+
+class ApiError extends Error {
+    constructor(message, statusCode) {
+        super(message);
+        this.statusCode = statusCode;
+    }
+}
+
+app.get('/', (req, res) => {
+    res.send('Welcome to CommunityHub API');
+});
+
+app.get('/about', (req, res) => {
+    res.send('CommunityHub - A community platform');
+});
+
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'OK',
+        time: new Date().toISOString()
+    });
+});
+
+app.get('/api/error', (req, res, next) => {
+    next(new ApiError('Something went wrong', 500));
+});
+
+const validatePost = (req, res, next) => {
+    const { title, content } = req.body;
+
+    if (!title || title.length < 3) {
+        return res.status(400).json({ error: 'Title must be at least 3 characters' });
+    }
+
+    if (!content || content.length < 10) {
+        return res.status(400).json({ error: 'Content must be at least 10 characters' });
+    }
+
+    next();
+};
+
+app.post('/api/posts', validatePost, (req, res) => {
+    res.json({
+        message: 'Post created successfully',
+        post: req.body
+    });
+});
+
+app.use((req, res) => {
+    res.status(404).json({ error: 'Route not found' });
+});
+
+app.use((err, req, res, next) => {
+    const status = err.statusCode || 500;
+
+    res.status(status).json({
+        error: err.message || 'Internal Server Error'
+    });
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+});
